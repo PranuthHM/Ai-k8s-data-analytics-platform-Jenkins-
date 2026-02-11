@@ -1,0 +1,9 @@
+*.csv
+*.docx
+*.pdf
+
+venv/
+__pycache__/
+*.pyc
+Report/
+report/
