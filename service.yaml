@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: colorado-sales-service
+spec:
+  type: NodePort
+  selector:
+    app: colorado-sales
+  ports:
+    - port: 80
+      targetPort: 8501    # ✅ FIXED
+      nodePort: 30007

@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: colorado-sales-deployment
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: colorado-sales
+  template:
+    metadata:
+      labels:
+        app: colorado-sales
+    spec:
+      containers:
+      - name: colorado-sales-container
+        image: colorado_motor_vechile
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 8501   # ✅ FIXED
