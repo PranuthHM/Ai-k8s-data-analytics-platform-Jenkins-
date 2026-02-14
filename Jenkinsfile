@@ -15,13 +15,13 @@ pipeline {
 
         stage('Clone Repository') {
             steps {
-                git 'https://github.com/PranuthHM/ai-k8s-data-analytics-platform.git'
+                git branch: 'main' , url: 'https://github.com/PranuthHM/ai-k8s-data-analytics-platform.git'
             }
         }
 
         stage('Build Docker Image') {
             steps {
-                sh 'docker build -t $IMAGE_NAME .'
+                sh 'docker build -t coloraedo .'
             }
         }
 
