@@ -3,22 +3,26 @@ pipeline {
 
     stages {
 
-        stage('Checkout Code') {
+        stage('Clone Repository') {
             steps {
-                checkout scm
+                bat 'git clone https://github.com/PranuthHM/ai-k8s-data-analytics-platform.git'
             }
         }
 
-        stage('Build Docker Image') {
+        stage('Enter Project Directory') {
             steps {
-                bat 'docker build -t colorado_motor_vechile .'
+                dir('ai-k8s-data-analytics-platform') {
+                    bat 'docker build -t colorado_motor_vechile .'
+                }
             }
         }
 
         stage('Deploy to Kubernetes') {
             steps {
-                bat 'kubectl apply -f deployment.yaml'
-                bat 'kubectl apply -f service.yaml'
+                dir('ai-k8s-data-analytics-platform') {
+                    bat 'kubectl apply -f deployment.yaml'
+                    bat 'kubectl apply -f service.yaml'
+                }
             }
         }
 
