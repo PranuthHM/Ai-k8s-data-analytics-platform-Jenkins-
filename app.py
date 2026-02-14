@@ -208,3 +208,59 @@ elif option == "Project Details":
 
     st.success("Thank you for reviewing this project!")
 
+import streamlit as st
+import subprocess
+import pandas as pd
+import time
+
+st.title("AI-Powered Kubernetes Monitoring Dashboard")
+
+def get_pod_data():
+    result = subprocess.run(
+        ["kubectl", "get", "pods", "-o", "json"],
+        capture_output=True,
+        text=True
+    )
+
+    import json
+    pods = json.loads(result.stdout)
+
+    data = []
+
+    for pod in pods["items"]:
+        name = pod["metadata"]["name"]
+        status = pod["status"]["phase"]
+        restarts = pod["status"]["containerStatuses"][0]["restartCount"]
+
+        # Simple AI logic
+        if restarts == 0:
+            health = "Healthy"
+        elif restarts < 3:
+            health = "Warning"
+        else:
+            health = "Critical"
+
+        data.append({
+            "Pod Name": name,
+            "Status": status,
+            "Restarts": restarts,
+            "AI Health Prediction": health
+        })
+
+    return pd.DataFrame(data)
+
+df = get_pod_data()
+
+st.table(df)
+
+st.subheader("AI Health Summary")
+
+healthy = len(df[df["AI Health Prediction"] == "Healthy"])
+warning = len(df[df["AI Health Prediction"] == "Warning"])
+critical = len(df[df["AI Health Prediction"] == "Critical"])
+
+st.write("Healthy Pods:", healthy)
+st.write("Warning Pods:", warning)
+st.write("Critical Pods:", critical)
+
+st.success("AI Monitoring Active")
