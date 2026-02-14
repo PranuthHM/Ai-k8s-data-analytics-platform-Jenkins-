@@ -3,6 +3,12 @@ pipeline {
 
     stages {
 
+        stage('Clean Workspace') {
+            steps {
+                deleteDir()
+            }
+        }
+
         stage('Build Docker Image') {
             steps {
                 sh 'docker build -t colorado_motor_vechile .'
