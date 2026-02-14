@@ -4,6 +4,8 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import numpy as np
 from statsmodels.tsa.arima.model import ARIMA
+import subprocess
+
 
 st.set_page_config(page_title="Colorado Motor Vehicle Sales Dashboard", layout="wide")
 
@@ -208,59 +210,45 @@ elif option == "Project Details":
 
     st.success("Thank you for reviewing this project!")
 
-import streamlit as st
-import subprocess
-import pandas as pd
-import time
 
-st.title("AI-Powered Kubernetes Monitoring Dashboard")
 
-def get_pod_data():
-    result = subprocess.run(
-        ["kubectl", "get", "pods", "-o", "json"],
-        capture_output=True,
-        text=True
-    )
+def get_pod_metrics():
+    try:
+        result = subprocess.run(
+            ["kubectl", "top", "pods", "--no-headers"],
+            capture_output=True,
+            text=True
+        )
 
-    import json
-    pods = json.loads(result.stdout)
+        if result.returncode != 0:
+            print("kubectl error:", result.stderr)
+            return pd.DataFrame()
 
-    data = []
+        lines = result.stdout.strip().split("\n")
 
-    for pod in pods["items"]:
-        name = pod["metadata"]["name"]
-        status = pod["status"]["phase"]
-        restarts = pod["status"]["containerStatuses"][0]["restartCount"]
+        data = []
+        for line in lines:
+            parts = line.split()
+            name = parts[0]
+            cpu = parts[1].replace("m","")
+            memory = parts[2].replace("Mi","")
 
-        # Simple AI logic
-        if restarts == 0:
-            health = "Healthy"
-        elif restarts < 3:
-            health = "Warning"
-        else:
-            health = "Critical"
+            data.append({
+                "pod": name,
+                "cpu": int(cpu),
+                "memory": int(memory)
+            })
 
-        data.append({
-            "Pod Name": name,
-            "Status": status,
-            "Restarts": restarts,
-            "AI Health Prediction": health
-        })
+        return pd.DataFrame(data)
 
-    return pd.DataFrame(data)
+    except Exception as e:
+        print("Error:", e)
+        return pd.DataFrame()
+df = get_pod_metrics()
 
-df = get_pod_data()
+st.title("AI Kubernetes Monitoring")
 
-st.table(df)
-
-st.subheader("AI Health Summary")
-
-healthy = len(df[df["AI Health Prediction"] == "Healthy"])
-warning = len(df[df["AI Health Prediction"] == "Warning"])
-critical = len(df[df["AI Health Prediction"] == "Critical"])
-
-st.write("Healthy Pods:", healthy)
-st.write("Warning Pods:", warning)
-st.write("Critical Pods:", critical)
-
-st.success("AI Monitoring Active")
+if not df.empty:
+    st.line_chart(df.set_index("pod")["cpu"])
+else:
+    st.warning("No metrics available")
