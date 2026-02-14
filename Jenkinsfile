@@ -3,29 +3,29 @@ pipeline {
 
     stages {
 
-        stage('Clean Workspace') {
+        stage('Checkout Code') {
             steps {
-                deleteDir()
+                checkout scm
             }
         }
 
         stage('Build Docker Image') {
             steps {
-                sh 'docker build -t colorado_motor_vechile .'
+                bat 'docker build -t colorado_motor_vechile .'
             }
         }
 
         stage('Deploy to Kubernetes') {
             steps {
-                sh 'kubectl apply -f deployment.yaml'
-                sh 'kubectl apply -f service.yaml'
+                bat 'kubectl apply -f deployment.yaml'
+                bat 'kubectl apply -f service.yaml'
             }
         }
 
         stage('Verify Deployment') {
             steps {
-                sh 'kubectl get pods'
-                sh 'kubectl get services'
+                bat 'kubectl get pods'
+                bat 'kubectl get services'
             }
         }
 
