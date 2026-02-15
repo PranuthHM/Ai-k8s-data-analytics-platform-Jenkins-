@@ -1,3 +1,5 @@
+# spec:
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -17,4 +19,14 @@ spec:
         image: colorado_motor_vechile
         imagePullPolicy: Never
         ports:
-        - containerPort: 8501   # ✅ FIXED
+        - containerPort: 8501
+        volumeMounts:
+        - name: kube-config
+          mountPath: /root/.kube
+          readOnly: true
+
+      volumes:
+      - name: kube-config
+        hostPath:
+          path: /home/pranuth/.kube
+          type: Directory
