@@ -4,7 +4,6 @@ pipeline {
 
     environment {
         IMAGE_NAME = "colorado_motor_vechile"
-        KUBECONFIG = "/var/jenkins_home/.kube/config"
     }
 
     stages {
@@ -19,70 +18,45 @@ pipeline {
         stage('Verify Kubernetes Connection') {
             steps {
                 echo "Checking Kubernetes cluster access..."
-                sh '''
-                kubectl get nodes
-                '''
+                sh 'kubectl get nodes'
             }
         }
 
         stage('Build Docker Image') {
             steps {
-                echo "Building Docker image inside Minikube Docker daemon..."
-                sh '''
-                eval $(minikube docker-env)
-                docker build -t $IMAGE_NAME .
-                docker images | grep $IMAGE_NAME
-                '''
+                echo "Building Docker image..."
+                sh 'docker build -t $IMAGE_NAME .'
             }
         }
 
         stage('Deploy to Kubernetes') {
             steps {
-                echo "Deploying application to Kubernetes..."
-                sh '''
-                kubectl apply -f deployment.yaml
-                kubectl apply -f service.yaml
-                '''
-            }
-        }
-
-        stage('Wait for Pods') {
-            steps {
-                echo "Waiting for pods to become ready..."
-                sh '''
-                sleep 10
-                kubectl get pods
-                '''
+                echo "Deploying to Kubernetes..."
+                sh 'kubectl apply -f deployment.yaml'
+                sh 'kubectl apply -f service.yaml'
             }
         }
 
         stage('Verify Deployment') {
             steps {
-                echo "Deployment status:"
-                sh '''
-                kubectl get deployment
-                kubectl get pods
-                kubectl get services
-                '''
+                echo "Verifying deployment..."
+                sh 'kubectl get pods'
+                sh 'kubectl get services'
             }
         }
 
     }
 
     post {
-
         success {
-            echo "Pipeline completed successfully. Application deployed."
+            echo "Pipeline completed successfully!"
         }
-
         failure {
             echo "Pipeline failed. Check logs."
         }
-
     }
 
 }
-
 
 
 
