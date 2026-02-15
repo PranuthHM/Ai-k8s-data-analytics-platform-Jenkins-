@@ -210,8 +210,6 @@ elif option == "Project Details":
 
     st.success("Thank you for reviewing this project!")
 
-
-
 def get_pod_metrics():
     try:
         result = subprocess.run(
@@ -220,35 +218,51 @@ def get_pod_metrics():
             text=True
         )
 
-        if result.returncode != 0:
-            print("kubectl error:", result.stderr)
+        if result.returncode != 0 or result.stdout.strip() == "":
             return pd.DataFrame()
 
         lines = result.stdout.strip().split("\n")
 
         data = []
+
         for line in lines:
             parts = line.split()
+
+            if len(parts) < 3:
+                continue
+
             name = parts[0]
-            cpu = parts[1].replace("m","")
-            memory = parts[2].replace("Mi","")
+            cpu = int(parts[1].replace("m", ""))
+            memory = int(parts[2].replace("Mi", ""))
 
             data.append({
                 "pod": name,
-                "cpu": int(cpu),
-                "memory": int(memory)
+                "cpu": cpu,
+                "memory": memory
             })
 
         return pd.DataFrame(data)
 
-    except Exception as e:
-        print("Error:", e)
+    except:
         return pd.DataFrame()
-df = get_pod_metrics()
 
 st.title("AI Kubernetes Monitoring")
 
+df = get_pod_metrics()
+
 if not df.empty:
+
+    st.subheader("CPU Usage per Pod")
     st.line_chart(df.set_index("pod")["cpu"])
+
+    st.subheader("Memory Usage per Pod")
+    st.bar_chart(df.set_index("pod")["memory"])
+
+    # Simple AI prediction (trend simulation)
+    df["predicted_cpu"] = df["cpu"] * 1.1
+
+    st.subheader("AI Predicted CPU Usage")
+    st.line_chart(df.set_index("pod")[["cpu", "predicted_cpu"]])
+
 else:
-    st.warning("No metrics available")
+    st.warning("Metrics server not ready. Run: minikube addons enable metrics-server")
