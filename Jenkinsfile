@@ -1,15 +1,14 @@
 pipeline {
+
     agent any
+
+    environment {
+        IMAGE_NAME = "colorado_motor_vechile"
+    }
 
     stages {
 
-        stage('Clean Workspace') {
-            steps {
-                deleteDir()
-            }
-        }
-
-        stage('Clone Repository') {
+        stage('Clone') {
             steps {
                 git branch: 'main', url: 'https://github.com/PranuthHM/ai-k8s-data-analytics-platform.git'
             }
@@ -17,7 +16,8 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                sh 'docker build -t colorado_motor_vechile .'
+                sh 'eval $(minikube docker-env)'
+                sh 'docker build -t $IMAGE_NAME .'
             }
         }
 
@@ -28,7 +28,7 @@ pipeline {
             }
         }
 
-        stage('Verify Deployment') {
+        stage('Verify') {
             steps {
                 sh 'kubectl get pods'
                 sh 'kubectl get services'
@@ -36,7 +36,9 @@ pipeline {
         }
 
     }
+
 }
+
 
 
 
