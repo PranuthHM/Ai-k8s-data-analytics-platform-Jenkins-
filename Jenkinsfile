@@ -1,10 +1,6 @@
 pipeline {
     agent any
 
-    environment {
-        IMAGE_NAME = "colorado_motor_vechile"
-    }
-
     stages {
 
         stage('Clean Workspace') {
@@ -15,29 +11,82 @@ pipeline {
 
         stage('Clone Repository') {
             steps {
-                git branch: 'main' , url: 'https://github.com/PranuthHM/ai-k8s-data-analytics-platform.git'
+                git branch: 'main', url: 'https://github.com/PranuthHM/ai-k8s-data-analytics-platform.git'
             }
         }
 
         stage('Build Docker Image') {
             steps {
-                sh 'docker build -t coloraedo .'
+                sh 'docker build -t colorado_motor_vechile .'
             }
         }
 
-        stage('Deploy to Kubernetes') {
+        stage('Copy files to Minikube') {
             steps {
-                sh 'kubectl apply -f deployment.yaml'
-                sh 'kubectl apply -f service.yaml'
+                sh 'docker cp deployment.yaml minikube:/deployment.yaml'
+                sh 'docker cp service.yaml minikube:/service.yaml'
             }
         }
 
-        stage('Verify Deployment') {
+        stage('Deploy') {
             steps {
-                sh 'kubectl get pods'
-                sh 'kubectl get services'
+                sh 'docker exec minikube kubectl apply -f /deployment.yaml'
+                sh 'docker exec minikube kubectl apply -f /service.yaml'
+            }
+        }
+
+        stage('Verify') {
+            steps {
+                sh 'docker exec minikube kubectl get pods'
+                sh 'docker exec minikube kubectl get services'
             }
         }
 
     }
 }
+
+
+
+// pipeline {
+//     agent any
+
+//     environment {
+//         IMAGE_NAME = "colorado_motor_vechile"
+//     }
+
+//     stages {
+
+//         stage('Clean Workspace') {
+//             steps {
+//                 deleteDir()
+//             }
+//         }
+
+//         stage('Clone Repository') {
+//             steps {
+//                 git branch: 'main' , url: 'https://github.com/PranuthHM/ai-k8s-data-analytics-platform.git'
+//             }
+//         }
+
+//         stage('Build Docker Image') {
+//             steps {
+//                 sh 'docker build -t coloraedo .'
+//             }
+//         }
+
+//         stage('Deploy to Kubernetes') {
+//             steps {
+//                 sh 'kubectl apply -f deployment.yaml'
+//                 sh 'kubectl apply -f service.yaml'
+//             }
+//         }
+
+//         stage('Verify Deployment') {
+//             steps {
+//                 sh 'kubectl get pods'
+//                 sh 'kubectl get services'
+//             }
+//         }
+
+//     }
+// }
