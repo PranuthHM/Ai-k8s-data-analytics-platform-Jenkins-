@@ -21,24 +21,17 @@ pipeline {
             }
         }
 
-        stage('Copy files to Minikube') {
+        stage('Deploy to Kubernetes') {
             steps {
-                sh 'docker cp deployment.yaml minikube:/deployment.yaml'
-                sh 'docker cp service.yaml minikube:/service.yaml'
+                sh 'kubectl apply -f deployment.yaml'
+                sh 'kubectl apply -f service.yaml'
             }
         }
 
-        stage('Deploy') {
+        stage('Verify Deployment') {
             steps {
-                sh 'docker exec minikube kubectl apply -f /deployment.yaml'
-                sh 'docker exec minikube kubectl apply -f /service.yaml'
-            }
-        }
-
-        stage('Verify') {
-            steps {
-                sh 'docker exec minikube kubectl get pods'
-                sh 'docker exec minikube kubectl get services'
+                sh 'kubectl get pods'
+                sh 'kubectl get services'
             }
         }
 
