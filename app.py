@@ -6,6 +6,55 @@ import numpy as np
 from statsmodels.tsa.arima.model import ARIMA
 import subprocess
 
+import subprocess
+
+
+# ======================================================
+# Kubernetes Metrics Function
+# ======================================================
+
+def get_pod_metrics():
+
+    try:
+
+        result = subprocess.run(
+            ["kubectl", "top", "pods", "--no-headers"],
+            capture_output=True,
+            text=True
+        )
+
+        if result.returncode != 0 or result.stdout.strip() == "":
+            return pd.DataFrame()
+
+        lines = result.stdout.strip().split("\n")
+
+        data = []
+
+        for line in lines:
+
+            parts = line.split()
+
+            if len(parts) < 3:
+                continue
+
+            pod = parts[0]
+
+            cpu = parts[1].replace("m", "")
+            memory = parts[2].replace("Mi", "")
+
+            data.append({
+                "pod": pod,
+                "cpu": int(cpu),
+                "memory": int(memory)
+            })
+
+        return pd.DataFrame(data)
+
+    except Exception as e:
+
+        print("Error getting metrics:", e)
+
+        return pd.DataFrame()
 
 st.set_page_config(page_title="Colorado Motor Vehicle Sales Dashboard", layout="wide")
 
@@ -18,8 +67,16 @@ df = pd.read_csv("colorado_motor_vehicle_sales.csv")
 st.sidebar.header("📌 Navigation")
 option = st.sidebar.radio(
     "Select Section",
-    ["Overview", "EDA", "County Analysis", "Forecasting", "Project Details"]
+    [
+        "Overview",
+        "EDA",
+        "County Analysis",
+        "Forecasting",
+        "Project Details",
+        "AI Monitoring"
+    ]
 )
+
 
 # ======================================================
 # 1️⃣ OVERVIEW SECTION
@@ -210,59 +267,42 @@ elif option == "Project Details":
 
     st.success("Thank you for reviewing this project!")
 
-def get_pod_metrics():
-    try:
-        result = subprocess.run(
-            ["kubectl", "top", "pods", "--no-headers"],
-            capture_output=True,
-            text=True
-        )
 
-        if result.returncode != 0 or result.stdout.strip() == "":
-            return pd.DataFrame()
+# ======================================================
+# 6️⃣ AI MONITORING SECTION
+# ======================================================
 
-        lines = result.stdout.strip().split("\n")
+elif option == "AI Monitoring":
 
-        data = []
+    st.header("🤖 AI Kubernetes Resource Monitoring")
+    st.sidebar.header("📌 Navigation")
 
-        for line in lines:
-            parts = line.split()
+    df_metrics = get_pod_metrics()
 
-            if len(parts) < 3:
-                continue
+    if not df_metrics.empty:
 
-            name = parts[0]
-            cpu = int(parts[1].replace("m", ""))
-            memory = int(parts[2].replace("Mi", ""))
+        col1, col2 = st.columns(2)
 
-            data.append({
-                "pod": name,
-                "cpu": cpu,
-                "memory": memory
-            })
+        with col1:
+            st.subheader("CPU Usage per Pod")
+            st.line_chart(df_metrics.set_index("pod")["cpu"])
 
-        return pd.DataFrame(data)
+        with col2:
+            st.subheader("Memory Usage per Pod")
+            st.bar_chart(df_metrics.set_index("pod")["memory"])
 
-    except:
-        return pd.DataFrame()
+        # AI Prediction simulation
+        df_metrics["predicted_cpu"] = df_metrics["cpu"] * 1.15
 
-st.title("AI Kubernetes Monitoring")
+        st.subheader("AI Predicted CPU Usage Trend")
+        st.line_chart(df_metrics.set_index("pod")[["cpu", "predicted_cpu"]])
 
-df = get_pod_metrics()
+        st.success("AI Monitoring Active")
 
-if not df.empty:
+    else:
 
-    st.subheader("CPU Usage per Pod")
-    st.line_chart(df.set_index("pod")["cpu"])
+        st.error("Metrics not available")
 
-    st.subheader("Memory Usage per Pod")
-    st.bar_chart(df.set_index("pod")["memory"])
+        st.code("Run this command:\nminikube addons enable metrics-server")
 
-    # Simple AI prediction (trend simulation)
-    df["predicted_cpu"] = df["cpu"] * 1.1
 
-    st.subheader("AI Predicted CPU Usage")
-    st.line_chart(df.set_index("pod")[["cpu", "predicted_cpu"]])
-
-else:
-    st.warning("Metrics server not ready. Run: minikube addons enable metrics-server")
