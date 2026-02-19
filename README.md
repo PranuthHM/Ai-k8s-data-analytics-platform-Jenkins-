@@ -106,7 +106,7 @@ cd /path/to/Final_Project
 
 Example:
 
-cd /mnt/p/MTech/Final_Project  
+cd /Disk1/Project  
 
 ---
 
