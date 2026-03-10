@@ -5,8 +5,255 @@ import seaborn as sns
 import numpy as np
 from statsmodels.tsa.arima.model import ARIMA
 import subprocess
+# from streamlit_autorefresh import st_autorefresh
+import time
 
-import subprocess
+
+
+
+# ======================================================
+# PAGE CONFIG
+# ======================================================
+st.set_page_config(page_title="Colorado Motor Vehicle Sales Dashboard", layout="wide")
+
+
+
+
+# ======================================================
+# FUTURISTIC CYBERPUNK DESIGN
+# ======================================================
+st.markdown("""
+<style>
+
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;600;700&display=swap');
+
+html, body, [class*="css"] {
+    font-family: 'Rajdhani', sans-serif;
+}
+
+/* Animated Gradient Background */
+
+.stApp {
+background: linear-gradient(270deg,#0f0c29,#302b63,#24243e,#0f0c29);
+background-size: 800% 800%;
+animation: gradientBG 20s ease infinite;
+}
+
+@keyframes gradientBG {
+0%{background-position:0% 50%}
+50%{background-position:100% 50%}
+100%{background-position:0% 50%}
+}
+
+/* Glass dashboard */
+
+.block-container {
+background: rgba(0,0,0,0.35);
+backdrop-filter: blur(20px);
+border-radius: 20px;
+padding: 2rem;
+box-shadow: 0 0 30px rgba(0,255,255,0.2);
+}
+
+/* Sidebar */
+
+[data-testid="stSidebar"]{
+background: linear-gradient(180deg,#0f2027,#203a43,#2c5364);
+border-right:1px solid cyan;
+}
+
+/* Metric cards */
+
+[data-testid="metric-container"]{
+background: rgba(0,0,0,0.5);
+border-radius:20px;
+border:1px solid cyan;
+padding:20px;
+box-shadow:0 0 20px rgba(0,255,255,0.4);
+transition:0.4s;
+}
+
+[data-testid="metric-container"]:hover{
+transform:translateY(-8px) scale(1.05);
+box-shadow:0 0 40px cyan;
+}
+
+/* Metric number */
+
+[data-testid="metric-container"] div{
+font-size:35px;
+font-weight:bold;
+color:#00ffff;
+text-shadow:0 0 10px cyan;
+}
+
+/* Titles */
+
+h1,h2,h3{
+font-family:'Orbitron', sans-serif;
+color:#00ffff;
+text-shadow:0 0 10px cyan;
+}
+
+/* Buttons */
+
+.stButton>button{
+background:linear-gradient(45deg,#00ffff,#ff00ff);
+border:none;
+color:black;
+border-radius:15px;
+padding:10px 25px;
+font-weight:bold;
+transition:0.3s;
+}
+
+.stButton>button:hover{
+transform:scale(1.1);
+box-shadow:0 0 20px #00ffff;
+}
+
+/* Tables */
+
+[data-testid="stDataFrame"]{
+background:rgba(0,0,0,0.4);
+border:1px solid cyan;
+border-radius:15px;
+}
+
+/* Chart glow */
+
+canvas{
+filter: drop-shadow(0px 0px 10px cyan);
+}
+
+/* Particle background */
+
+#particles-js{
+position:fixed;
+width:100%;
+height:100%;
+top:0;
+left:0;
+z-index:-1;
+}
+/* SIDEBAR MAIN */
+
+[data-testid="stSidebar"] {
+    background: linear-gradient(180deg,#0f2027,#203a43,#2c5364);
+    border-right: 1px solid cyan;
+}
+
+/* RADIO BUTTON CONTAINER */
+
+div[role="radiogroup"] > label {
+    background: rgba(0,0,0,0.35);
+    padding: 12px 16px;
+    margin-bottom: 8px;
+    border-radius: 12px;
+    border: 1px solid rgba(0,255,255,0.2);
+    transition: all 0.35s ease;
+    cursor: pointer;
+    color: #ffffff;
+}
+
+/* HOVER ANIMATION */
+
+div[role="radiogroup"] > label:hover {
+
+    transform: translateX(8px) scale(1.03);
+
+    background: linear-gradient(90deg,#00ffff33,#ff00ff33);
+
+    border: 1px solid cyan;
+
+    box-shadow: 0 0 12px cyan;
+
+}
+
+/* ACTIVE SELECTED */
+
+div[role="radiogroup"] > label[data-selected="true"] {
+
+    background: linear-gradient(90deg,#00ffff,#ff00ff);
+
+    color: black;
+
+    font-weight: bold;
+
+    transform: scale(1.05);
+
+    box-shadow: 0 0 15px #00ffff;
+
+}
+
+/* ICON ANIMATION */
+
+div[role="radiogroup"] > label:hover span {
+
+    animation: glowText 1s infinite alternate;
+
+}
+
+@keyframes glowText {
+
+    from { text-shadow:0 0 5px cyan; }
+
+    to { text-shadow:0 0 15px cyan; }
+
+}
+
+/* SIDEBAR HEADER */
+
+[data-testid="stSidebar"] h1,
+[data-testid="stSidebar"] h2,
+[data-testid="stSidebar"] h3 {
+
+    color:#00ffff;
+
+    text-shadow:0 0 10px cyan;
+
+}
+</style>
+
+<div id="particles-js"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/particles.js"></script>
+
+<script>
+particlesJS("particles-js",{
+"particles":{
+"number":{"value":80},
+"color":{"value":"#00ffff"},
+"shape":{"type":"circle"},
+"opacity":{"value":0.6},
+"size":{"value":3},
+"line_linked":{
+"enable":true,
+"distance":150,
+"color":"#00ffff",
+"opacity":0.4,
+"width":1
+},
+"move":{
+"enable":true,
+"speed":3
+}
+},
+"interactivity":{
+"events":{
+"onhover":{"enable":true,"mode":"repulse"},
+"onclick":{"enable":true,"mode":"push"}
+}
+}
+});
+</script>
+""", unsafe_allow_html=True)
+
+
+
+st.title("🚗 Colorado Motor Vehicle Sales Analysis & Forecasting")
+
+
 
 
 # ======================================================
@@ -56,14 +303,16 @@ def get_pod_metrics():
 
         return pd.DataFrame()
 
-st.set_page_config(page_title="Colorado Motor Vehicle Sales Dashboard", layout="wide")
 
-st.title("🚗 Colorado Motor Vehicle Sales Analysis & Forecasting")
+
 
 # Load Data
 df = pd.read_csv("colorado_motor_vehicle_sales.csv")
 
-# Sidebar Navigation
+
+
+
+# Sidebar
 st.sidebar.header("📌 Navigation")
 option = st.sidebar.radio(
     "Select Section",
@@ -78,10 +327,13 @@ option = st.sidebar.radio(
 )
 
 
+
+
 # ======================================================
-# 1️⃣ OVERVIEW SECTION
+# OVERVIEW
 # ======================================================
 if option == "Overview":
+
     st.header("📊 Overview Dashboard")
 
     col1, col2, col3 = st.columns(3)
@@ -102,64 +354,78 @@ if option == "Overview":
     st.pyplot(fig)
 
     st.subheader("📊 Sales by Quarter")
+
     fig2, ax2 = plt.subplots()
     sns.barplot(x="quarter", y="sales", data=df, ax=ax2)
     st.pyplot(fig2)
+    
+    st.success("📊 Overview Dashboard performed successfully")
+
+
+
+
+
 
 
 # ======================================================
-# 2️⃣ EDA SECTION
+# EDA
 # ======================================================
 elif option == "EDA":
+
     st.header("📊 Exploratory Data Analysis")
 
     st.subheader("Quarter-wise Sales Distribution")
+
     fig, ax = plt.subplots()
     sns.boxplot(x=df['quarter'], y=df['sales'], ax=ax)
     st.pyplot(fig)
 
     st.subheader("County-wise Total Sales")
+
     county_total = df.groupby("county")["sales"].sum().sort_values(ascending=False)
 
     fig2, ax2 = plt.subplots(figsize=(10,4))
     county_total.head(10).plot(kind='bar', ax=ax2)
-    ax2.set_title("Top 10 Counties by Sales")
     st.pyplot(fig2)
 
     st.subheader("Correlation Heatmap")
+
     pivot = df.pivot_table(values='sales', index='year', columns='county')
+
     fig3, ax3 = plt.subplots(figsize=(8,6))
     sns.heatmap(pivot.corr(), cmap="coolwarm", ax=ax3)
     st.pyplot(fig3)
-    st.success("EDA Operations performed successfully!")
+    
+    
+    st.success("📊 Exploratory Data Analysis performed successfully")
+
 
 
 
 # ======================================================
-# 3️⃣ COUNTY ANALYSIS (WITH SUBSECTIONS)
+# COUNTY ANALYSIS
 # ======================================================
 elif option == "County Analysis":
+
     st.header("🏙 County-Level Analysis")
 
-    tab1, tab2 = st.tabs(["📊 Year & Quarter Filter", "📈 County Trend Over Time"])
+    tab1, tab2 = st.tabs(["📊 Year & Quarter Filter", "📈 County Trend"])
 
-    # TAB 1
     with tab1:
+
         year = st.selectbox("Select Year", sorted(df.year.unique()))
         quarter = st.selectbox("Select Quarter", [1,2,3,4])
 
         temp = df[(df.year==year) & (df.quarter==quarter)]
-        county_sales = temp.groupby('county')['sales'].sum().sort_values(ascending=False)
+
+        county_sales = temp.groupby('county')['sales'].sum()
 
         fig, ax = plt.subplots(figsize=(12,4))
         county_sales.plot(kind='bar', ax=ax)
-        ax.set_title(f"Sales by County - {year} Q{quarter}")
         st.pyplot(fig)
-        
-        st.success("Country Analysis 📊 Year & Quarter Filter generated successfully!")
 
-    # TAB 2
     with tab2:
+
         selected_county = st.selectbox("Select County", df['county'].unique())
 
         county_ts = df[df['county']==selected_county]
@@ -167,63 +433,54 @@ elif option == "County Analysis":
 
         fig2, ax2 = plt.subplots()
         county_ts.plot(marker='o', ax=ax2)
-        ax2.set_title(f"{selected_county} Sales Trend")
         st.pyplot(fig2)
         
-        st.success("Country Analysis's 📈 County Trend Over Time Generated successfully!")
+    st.success("Country Analysis performed successfully")
+
+
+
 
 
 
 # ======================================================
-# 4️⃣ FORECASTING SECTION
+# FORECASTING
 # ======================================================
 elif option == "Forecasting":
+
     st.header("🔮 Sales Forecasting")
 
-    try:
-        # Create proper datetime index
-        df['month'] = df['quarter'].map({1:1,2:4,3:7,4:10})
-        df['date'] = pd.to_datetime(df[['year','month']].assign(day=1))
+    df['month'] = df['quarter'].map({1:1,2:4,3:7,4:10})
+    df['date'] = pd.to_datetime(df[['year','month']].assign(day=1))
 
-        ts = df.groupby('date')['sales'].sum()
+    ts = df.groupby('date')['sales'].sum()
 
-        # IMPORTANT: Do NOT use asfreq blindly
-        ts.index = pd.PeriodIndex(ts.index, freq='Q').to_timestamp()
+    ts.index = pd.PeriodIndex(ts.index, freq='Q').to_timestamp()
 
-        st.subheader("📈 Historical Sales Trend")
-        fig, ax = plt.subplots()
-        ts.plot(ax=ax)
-        st.pyplot(fig)
+    fig, ax = plt.subplots()
+    ts.plot(ax=ax)
+    st.pyplot(fig)
 
-        st.subheader("📊 Moving Average (4 Quarters)")
-        moving_avg = ts.rolling(window=4).mean()
+    model = ARIMA(ts, order=(1,1,1))
+    fit = model.fit()
+    forecast = fit.forecast(steps=8)
 
-        fig2, ax2 = plt.subplots()
-        ts.plot(label="Actual", ax=ax2)
-        moving_avg.plot(label="Moving Avg", ax=ax2)
-        ax2.legend()
-        st.pyplot(fig2)
+    fig2, ax2 = plt.subplots()
+    ts.plot(label="Actual", ax=ax2)
+    forecast.plot(label="Forecast", ax=ax2)
+    ax2.legend()
+    st.pyplot(fig2)
+    
+    st.success("Sales Forecasting performed successfully")
 
-        st.subheader("📉 ARIMA Forecast (Next 8 Quarters)")
 
-        model = ARIMA(ts, order=(1,1,1))
-        fit = model.fit()
-        forecast = fit.forecast(steps=8)
 
-        fig3, ax3 = plt.subplots()
-        ts.plot(label="Actual", ax=ax3)
-        forecast.plot(label="Forecast", ax=ax3)
-        ax3.legend()
-        st.pyplot(fig3)
 
-        st.success("Forecast generated successfully!")
 
-    except Exception as e:
-        st.error(f"Forecasting failed: {e}")
+
 
 
 # ======================================================
-# 5️⃣ PROJECT DETAILS SECTION
+# PROJECT DETAILS
 # ======================================================
 elif option == "Project Details":
     st.header("📌 Project Information")
@@ -232,8 +489,8 @@ elif option == "Project Details":
     ### 🚗 Colorado Motor Vehicle Sales Analysis & Forecasting
     
     **Developed By:** Pranuth Manjunath  
-    **Domain:** Finance Analytics / Data Science  
-    **Tools Used:** Python, Pandas, Seaborn, ARIMA, Streamlit  
+    **Domain:** MLOps  
+    **Tools Used:** Python, Pandas, Seaborn, ARIMA, Streamlit, Docker, Kubernetes  
     """)
 
     st.markdown("### 📂 Download Files")
@@ -268,41 +525,79 @@ elif option == "Project Details":
     st.success("Thank you for reviewing this project!")
 
 
+
+
+
+
+
 # ======================================================
-# 6️⃣ AI MONITORING SECTION
+# AI MONITORING
 # ======================================================
+
 
 elif option == "AI Monitoring":
 
     st.header("🤖 AI Kubernetes Resource Monitoring")
-    st.sidebar.header("📌 Navigation")
+
+    st.markdown("""
+    This section monitors Kubernetes pod resource utilization in real time.
+    CPU and Memory metrics are collected using `kubectl top pods`.
+    The system simulates AI-based prediction for future resource usage.
+    """)
 
     df_metrics = get_pod_metrics()
 
     if not df_metrics.empty:
 
+        # initialize history
+        if "cpu_history" not in st.session_state:
+            st.session_state.cpu_history = []
+
+        cpu_total = df_metrics["cpu"].sum()
+
+        st.session_state.cpu_history.append(cpu_total)
+
+        if len(st.session_state.cpu_history) > 30:
+            st.session_state.cpu_history.pop(0)
+
+        st.subheader("📦 Active Kubernetes Pods")
+        st.dataframe(df_metrics)
+
         col1, col2 = st.columns(2)
 
         with col1:
-            st.subheader("CPU Usage per Pod")
+            st.subheader("📈 CPU Usage per Pod")
             st.line_chart(df_metrics.set_index("pod")["cpu"])
 
         with col2:
-            st.subheader("Memory Usage per Pod")
+            st.subheader("💾 Memory Usage per Pod")
             st.bar_chart(df_metrics.set_index("pod")["memory"])
 
-        # AI Prediction simulation
+        st.subheader("⚡ Real-Time Cluster CPU Usage")
+        st.line_chart(st.session_state.cpu_history)
+
         df_metrics["predicted_cpu"] = df_metrics["cpu"] * 1.15
 
-        st.subheader("AI Predicted CPU Usage Trend")
-        st.line_chart(df_metrics.set_index("pod")[["cpu", "predicted_cpu"]])
+        st.subheader("🤖 AI Predicted CPU Trend")
+        st.line_chart(df_metrics.set_index("pod")[["cpu","predicted_cpu"]])
 
-        st.success("AI Monitoring Active")
+        
+        st.info("""
+        🔹 **Kubernetes Pod Explanation**
+
+        Each Pod represents a running instance of the containerized analytics application.
+        The Deployment controller ensures that the defined number of replicas remain active.
+
+        If a pod crashes or is deleted, Kubernetes automatically creates a new pod.
+        This feature is called **Self-Healing Infrastructure**.
+        """)
+        
+        st.metric("Active Pods", len(df_metrics))
+
+        st.success("Real-time Kubernetes Monitoring Active")
 
     else:
+        st.warning("Metrics not available yet. Waiting for Kubernetes metrics...")
 
-        st.error("Metrics not available")
-
-        st.code("Run this command:\nminikube addons enable metrics-server")
-
-
+    time.sleep(3)
+    st.rerun()
