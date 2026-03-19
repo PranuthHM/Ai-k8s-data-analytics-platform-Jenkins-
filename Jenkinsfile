@@ -3,12 +3,6 @@ pipeline {
 
     stages {
 
-        stage('Clone Code') {
-            steps {
-                git branch: 'main', url: 'https://github.com/PranuthHM/Ai-k8s-data-analytics-platform-Jenkins-.git'
-            }
-        }
-
         stage('Fix Docker Config') {
             steps {
                 sh '''
