@@ -5,7 +5,8 @@ pipeline {
 
         stage('Clone Code') {
             steps {
-                git 'https://github.com/PranuthHM/ai-k8s-data-analytics-platform-jenkins-.git'
+                git branch: 'main', url: 'https://github.com/PranuthHM/Ai-k8s-data-analytics-platform-Jenkins-.git'
+                //git 'https://github.com/PranuthHM/ai-k8s-data-analytics-platform-jenkins-.git'
             }
         }
 
