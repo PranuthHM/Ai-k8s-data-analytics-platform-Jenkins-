@@ -6,7 +6,6 @@ pipeline {
         stage('Clone Code') {
             steps {
                 git branch: 'main', url: 'https://github.com/PranuthHM/Ai-k8s-data-analytics-platform-Jenkins-.git'
-                //git 'https://github.com/PranuthHM/ai-k8s-data-analytics-platform-jenkins-.git'
             }
         }
 
@@ -19,19 +18,9 @@ pipeline {
             }
         }
 
-        // stage('Start Minikube') {
-        //     steps {
-        //         sh '''
-        //         minikube start --driver=docker
-        //         minikube addons enable metrics-server
-        //         '''
-        //     }
-        // }
-
-        stage('Connect Docker') {
+        stage('Build Docker Image') {
             steps {
                 sh '''
-                eval $(minikube docker-env)
                 docker build -t colorado_motor_vechile .
                 '''
             }
@@ -47,7 +36,7 @@ pipeline {
             }
         }
 
-        stage('Show Pods') {
+        stage('Verify Deployment') {
             steps {
                 sh 'kubectl get pods'
             }
