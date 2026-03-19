@@ -19,14 +19,14 @@ pipeline {
             }
         }
 
-        stage('Start Minikube') {
-            steps {
-                sh '''
-                minikube start --driver=docker
-                minikube addons enable metrics-server
-                '''
-            }
-        }
+        // stage('Start Minikube') {
+        //     steps {
+        //         sh '''
+        //         minikube start --driver=docker
+        //         minikube addons enable metrics-server
+        //         '''
+        //     }
+        // }
 
         stage('Connect Docker') {
             steps {
